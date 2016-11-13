@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "bin/index.js",
+        "sourceMap": true
+    },
+    "include": [
+        "src/**/*"
+    ]
+}
