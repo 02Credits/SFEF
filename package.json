@@ -4,7 +4,9 @@
   "dependencies": {
     "@types/pixi.js": "^3.0.30"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt-typescript": "^0.8.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/02Credits/SFEF-New.git"
