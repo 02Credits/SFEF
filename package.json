@@ -1,11 +1,9 @@
 {
   "name": "sfef",
   "version": "1.0.0",
-  "dependencies": {
-    "@types/pixi.js": "^3.0.30"
-  },
   "devDependencies": {
-    "grunt-typescript": "^0.8.0"
+    "@types/lodash": "^4.14.39",
+    "@types/pixi.js": "^3.0.30"
   },
   "repository": {
     "type": "git",

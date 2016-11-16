@@ -4,7 +4,8 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "outFile": "bin/index.js",
-        "sourceMap": true
+        "sourceMap": true,
+        "module": "commonjs"
     },
     "include": [
         "src/**/*"

@@ -5,6 +5,13 @@
  * { padding: 0; margin: 0}
 </style>
 <body>
-    <script src="libraries/pixi.js"></script>
+    <script src="libraries/system.js"></script>
+    <script>
+     SystemJS.config({
+         baseUrl: '/bin'
+     });
+
+     SystemJS.import('index.js');
+    </script>
     <script src="bin/index.js"></script>
 </body>
