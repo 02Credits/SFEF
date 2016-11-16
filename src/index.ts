@@ -1,7 +1,14 @@
-interface KeithSprite extends PIXI.Sprite {
+interface EmoteSprite extends PIXI.Sprite {
     vx: number;
     vy: number;
 }
+
+interface EmoteHolder extends PIXI.Container {
+    vx: number;
+    vy: number;
+}
+
+
 
 interface KeyboardEventHandler {
     code: number;
@@ -36,19 +43,40 @@ renderer.render(stage);
 
 loader
     .add("images/keith.png")
+		.add("images/jonjo.png")
     .load(setup);
 
 //Define any variables that are used in more than one function
-var cat: KeithSprite;
+var keiths: EmoteSprite[] = [];
+var jonjos: EmoteSprite[] = [];
+var keithAmount = 80;
+var jonjoAmount = 80;
+var emoteContainer = new PIXI.Container() as EmoteHolder;
 
 function setup() {
 
     //Create the `cat` sprite
-    cat = new Sprite(resources["images/keith.png"].texture) as KeithSprite;
-    cat.y = 96;
-    cat.vx = 0;
-    cat.vy = 0;
-    stage.addChild(cat);
+	
+		for (var i=0; i<keithAmount; i++)	{
+			keiths[i] = new Sprite(resources["images/keith.png"].texture) as EmoteSprite;
+			keiths[i].anchor.set(-2, 0);
+			keiths[i].y = 200 * Math.floor(i/10 %10) + 50;
+			keiths[i].x = 200 * Math.floor(i % 10) + 50;
+			emoteContainer.addChild(keiths[i]);
+		}
+	
+		for (var i=0; i<jonjoAmount; i++) {
+			jonjos[i] = new Sprite(resources["images/jonjo.png"].texture) as EmoteSprite;
+			jonjos[i].height = 40;
+			jonjos[i].width = 30;
+			jonjos[i].y = 200 * Math.floor(i/10 %10) +25;
+			jonjos[i].x = 200 * Math.floor(i % 10) +25;
+			emoteContainer.addChild(jonjos[i]);
+		}
+		
+		emoteContainer.vy = 0;
+		emoteContainer.vx = 0;
+		stage.addChild(emoteContainer);
 
     //Capture the keyboard arrow keys
     var left = keyboard(37),
@@ -59,49 +87,51 @@ function setup() {
     //Left arrow key `press` method
     left.press = function() {
         //Change the cat's velocity when the key is pressed
-        cat.vx = -5;
-        cat.vy = 0;
+				emoteContainer.vx = -10;
+        emoteContainer.vy = 0;
     };
     //Left arrow key `release` method
     left.release = function() {
         //If the left arrow has been released, and the right arrow isn't down,
         //and the cat isn't moving vertically:
         //Stop the cat
-        if (!right.isDown && cat.vy === 0) {
-            cat.vx = 0;
-        }
+        if (!right.isDown && emoteContainer.vy === 0) {
+					emoteContainer.vx = 0;
+				 }
     };
 
     //Up
     up.press = function() {
-        cat.vy = -5;
-        cat.vx = 0;
+        emoteContainer.vx = 0;
+        emoteContainer.vy = -10;
     };
     up.release = function() {
-        if (!down.isDown && cat.vx === 0) {
-            cat.vy = 0;
-        }
+        if (!down.isDown && emoteContainer.vx === 0) {
+					emoteContainer.vy = 0;
+				}
     };
 
     //Right
     right.press = function() {
-        cat.vx = 5;
-        cat.vy = 0;
+        emoteContainer.vx = 10;
+        emoteContainer.vy = 0;
+
     };
     right.release = function() {
-        if (!left.isDown && cat.vy === 0) {
-            cat.vx = 0;
+        if (!left.isDown && emoteContainer.vy === 0) {
+					emoteContainer.vx = 0;
         }
     };
 
     //Down
     down.press = function() {
-        cat.vy = 5;
-        cat.vx = 0;
+        emoteContainer.vx = 0;
+        emoteContainer.vy = 10;
+			
     };
     down.release = function() {
-        if (!up.isDown && cat.vx === 0) {
-            cat.vy = 0;
+        if (!up.isDown && emoteContainer.vx === 0) {
+					emoteContainer.vy = 0;
         }
     };
 
@@ -121,10 +151,13 @@ function gameLoop(){
 
 function play() {
 
-    //Use the cat's velocity to make it move
-    cat.x += cat.vx;
-    cat.y += cat.vy
-	  cat.rotation += 0.1;
+    //Use the keith's velocity to make it move
+
+					emoteContainer.x += emoteContainer.vx;
+    			emoteContainer.y += emoteContainer.vy;
+			for (var i=0; i<keithAmount; i++) {
+				keiths[i].rotation += 0.1;
+			}
 }
 
 //The `keyboard` helper function
