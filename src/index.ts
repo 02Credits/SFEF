@@ -1,13 +1,19 @@
-interface EmoteSprite extends PIXI.Sprite {
-    vx: number;
-    vy: number;
-}
+var SPACING = 235;
+var JONJO_HEIGHT = 40;
+var JONJO_WIDTH = 30;
+var LEFT_CODE = 37;
+var UP_CODE = 38;
+var RIGHT_CODE = 39;
+var DOWN_CODE = 40;
+var MOVEMENT_SPEED = 3.5;
+var ROTATION_SPEED = 0.125;
+var JONJO_SCALE = 1.1;
 
-interface EmoteHolder extends PIXI.Container {
-    vx: number;
-    vy: number;
-}
-
+var Container = PIXI.Container;
+var autoDetectRenderer = PIXI.autoDetectRenderer;
+var loader = PIXI.loader;
+var resources = PIXI.loader.resources;
+var Sprite = PIXI.Sprite;
 
 interface KeyboardEventHandler {
     code: number;
@@ -18,11 +24,31 @@ interface KeyboardEventHandler {
     release?: () => void;
     isUpHandler?: (event: KeyboardEvent) => void;
 }
-var Container = PIXI.Container,
-autoDetectRenderer = PIXI.autoDetectRenderer,
-loader = PIXI.loader,
-resources = PIXI.loader.resources,
-Sprite = PIXI.Sprite;
+
+class Circle {
+    jonjo: PIXI.Sprite;
+    keith: PIXI.Sprite;
+    container: PIXI.Container;
+
+    constructor(resources: PIXI.loaders.ResourceDictionary) {
+        this.keith = new PIXI.Sprite(resources["images/keith.png"].texture);
+				this.keith.anchor.set(-2, 0);
+        this.container = new PIXI.Container();
+        this.container.addChild(this.keith);
+        this.jonjo = new PIXI.Sprite(resources["images/jonjo.png"].texture);
+        this.jonjo.height = JONJO_HEIGHT;
+        this.jonjo.width = JONJO_WIDTH;
+        this.jonjo.anchor.set(.5, .5);
+        this.container.addChild(this.jonjo);
+        var background = new PIXI.Sprite(resources["images/jonjo.png"].texture);
+        background.width = SPACING * 2;
+        background.height = SPACING * 2;
+        background.anchor.set(.5, .5);
+        background.visible = false;
+        this.container.addChild(background);
+    }
+}
+
 
 var renderer =
     PIXI.autoDetectRenderer(
@@ -53,124 +79,82 @@ renderer.render(stage);
 
 loader
     .add("images/keith.png")
-	.add("images/jonjo.png")
-	.add("song/song.mp3")
+	  .add("images/jonjo.png")
+	  .add("song/song.mp3")
     .load(setup);
 
 //Define any variables that are used in more than one function
-var keiths: EmoteSprite[] = [];
-var jonjos: EmoteSprite[] = [];
-var keithCount = 0;
-var jonjoCount = 0;
-var circles: any[] = [];
-var graphics = new PIXI.Graphics();
+var circles: Circle[][] = [];
 var colorMatrix = new PIXI.filters.ColorMatrixFilter();
 var blurFilter = new PIXI.filters.BlurFilter();
-var emoteContainer = new PIXI.Container() as EmoteHolder;
+blurFilter.blur = .5;
+var emoteContainer = new PIXI.Container();
+
+var vx = 0;
+var vy = 0;
+var rotation = 0;
 
 function setup() {
+		for (var j=-3; j<(window.innerWidth / SPACING) + 3; j++)	{
+        circles[j] = [];
+			  for (var i=-3; i<(window.innerHeight / SPACING) + 3; i++)	{
+            circles[j][i] = new Circle(resources);
+            circles[j][i].container.x = SPACING * i;
+            circles[j][i].container.y = SPACING * j;
 
-		
-		for (var j=0; j<20; j++)	{
-			for (var i=0; i<20; i++)	{
-				keiths[keithCount] = new Sprite(resources["images/keith.png"].texture) as EmoteSprite;
-				keiths[keithCount].anchor.set(-2, 0);
-				keiths[keithCount].y = 235 * i;
-				keiths[keithCount].x = 235 * j;
-				emoteContainer.addChild(keiths[keithCount]);
-				keithCount++;
-			}
-		}
-        graphics.lineStyle(2, 0x0000FF, 1);
-		for (var j=0; j<20; j++)	{
-			for (var i=0; i<20; i++) {
-				jonjos[jonjoCount] = new Sprite(resources["images/jonjo.png"].texture) as EmoteSprite;
-                //circles[jonjoCount] = graphics.drawCircle(235 * i - 4, 235 * j - 3, 50);
-				jonjos[jonjoCount].height = 40;
-				jonjos[jonjoCount].width = 30;
-				jonjos[jonjoCount].y = 235 * i;
-                jonjos[jonjoCount].anchor.set(.5, .5);
-				jonjos[jonjoCount].x = 235 * j;
-				emoteContainer.addChild(jonjos[jonjoCount]);
-				jonjoCount++;
-			}
+            stage.addChild(circles[j][i].container);
+			  }
 		}
 
-        
-		emoteContainer.x = -1500;
-		emoteContainer.y = -1500;
-		emoteContainer.vy = 0;
-		emoteContainer.vx = 0;
-		
-	
-		
-		graphics.lineStyle(2, 0x0000FF, 1);
-		graphics.drawRect(-120,-120, 235*2, 235*2);
-		graphics.drawRect(-120, -120, 235, 235);
-		graphics.drawRect(-120,-120, 235/2, 235/2);
-	
-	
 		//Filters
-		blurFilter.blur = .5;
-		//colorMatrix.technicolor(false);
-		//colorMatrix.brightness(3, true);
-		emoteContainer.filters = [blurFilter, colorMatrix];
-	
-	
-		emoteContainer.addChild(graphics);
-		stage.addChild(emoteContainer);
+    stage.filters = [blurFilter, colorMatrix];
 
     //Capture the keyboard arrow keys
-    var left = keyboard(37),
-    up = keyboard(38),
-    right = keyboard(39),
-    down = keyboard(40);
+    var left = keyboard(37);
+    var up = keyboard(38);
+    var right = keyboard(39);
+    var down = keyboard(40);
 
-    //Left arrow key `press` method
+    //Left
     left.press = function() {
         //Change the cat's velocity when the key is pressed
-				emoteContainer.vx = -3.5;
-        emoteContainer.vy = 0;
+				vx = -MOVEMENT_SPEED;
     };
-    //Left arrow key `release` method
     left.release = function() {
-        if (!right.isDown && emoteContainer.vy === 0) {
-					emoteContainer.vx = 0;
-				 }
+        if (!right.isDown) {
+					  vx = 0;
+				}
     };
 
     //Up
     up.press = function() {
-        emoteContainer.vx = 0;
-        emoteContainer.vy = -3.5;
+        vy = -MOVEMENT_SPEED;
     };
     up.release = function() {
-        if (!down.isDown && emoteContainer.vx === 0) {
-					emoteContainer.vy = 0;
+        if (!down.isDown) {
+					  vy = 0;
 				}
     };
 
     //Right
     right.press = function() {
-        emoteContainer.vx = 3.5;
-        emoteContainer.vy = 0;
+        vx = MOVEMENT_SPEED;
 
     };
     right.release = function() {
-        if (!left.isDown && emoteContainer.vy === 0) {
-					emoteContainer.vx = 0;
+        if (!left.isDown) {
+					  vx = 0;
         }
     };
 
     //Down
     down.press = function() {
-        emoteContainer.vx = 0;
-        emoteContainer.vy = 3.5;
-			
+        vy = MOVEMENT_SPEED;
+
     };
     down.release = function() {
-        if (!up.isDown && emoteContainer.vx === 0) {
-					emoteContainer.vy = 0;
+        if (!up.isDown) {
+					  vy = 0;
         }
     };
 
@@ -178,12 +162,7 @@ function setup() {
     gameLoop();
 }
 
-
-
-		
-
 function gameLoop(){
-
     //Loop this function 60 times per second
     requestAnimationFrame(gameLoop);
 
@@ -193,26 +172,46 @@ function gameLoop(){
 }
 
 function play() {
+    rotation += ROTATION_SPEED;
+
+    analyser.getByteFrequencyData(frequencyData);
+
+    var rightBound = (Math.floor(window.innerWidth/SPACING) + 1) * SPACING;
+    var bottomBound = (Math.floor(window.innerHeight/SPACING) + 1) * SPACING;
+    var leftBound = -1 * SPACING;
+    var topBound = leftBound;
 
     //Use the keith's velocity to make it move, but only if it will stay on the screen
-			if (emoteContainer.x + emoteContainer.vx <= -250 && emoteContainer.x + emoteContainer.vx >= -2440) {
-				emoteContainer.x += emoteContainer.vx;
-			}
-	
-    	if (emoteContainer.y + emoteContainer.vy <= -250 && emoteContainer.y + emoteContainer.vy >= -3200) {
-				emoteContainer.y += emoteContainer.vy;
-			}
-			for (var i=0; i<keithCount; i++) {
-				keiths[i].rotation += 0.125;
-                jonjos[i].height = frequencyData[100] * 1.1;
-                jonjos[i].width = frequencyData[100] * 1.1;
-			}
-            
-            //circles[200].radius += 10;
-			colorMatrix.hue(keiths[1].rotation);
+    for (var row of circles)
+    {
+        for (var circle of row)
+        {
+            circle.container.x += vx;
+            circle.container.y += vy;
+            circle.keith.rotation = rotation;
+            circle.jonjo.height = frequencyData[100];
+            circle.jonjo.width = frequencyData[100];
 
-            analyser.getByteFrequencyData(frequencyData);
-            console.log(frequencyData);
+            if (circle.container.x > rightBound)
+            {
+                circle.container.x = leftBound;
+            }
+            if (circle.container.x < leftBound)
+            {
+                circle.container.x = rightBound;
+            }
+            if (circle.container.y > bottomBound)
+            {
+                circle.container.y = topBound;
+            }
+            if (circle.container.y < topBound)
+            {
+                circle.container.y = bottomBound;
+            }
+        }
+    }
+
+		colorMatrix.hue(rotation);
 }
 
 //The `keyboard` helper function
@@ -250,4 +249,3 @@ function keyboard(keyCode: number) {
     );
     return key;
 }
-

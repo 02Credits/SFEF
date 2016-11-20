@@ -8,11 +8,12 @@
     <script src="libraries/system.js"></script>
     <script src="libraries/pixi.js"></script>
     <script>
-     //SystemJS.config({
-         //baseUrl: '/bin'
-     //});
+    SystemJS.config({
+         baseUrl: '/bin',
+         defaultExtension: 'js',
+    });
 
-     //SystemJS.import('index.js');
+    SystemJS.import('index.js');
     </script>
     <script src="bin/index.js"></script>
 </body>
