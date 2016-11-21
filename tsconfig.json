@@ -3,7 +3,9 @@
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "outFile": "bin/index.js",
+        "moduleResolution": "node",
+        "module": "system",
+        "outDir": "bin/",
         "sourceMap": true
     },
     "include": [
